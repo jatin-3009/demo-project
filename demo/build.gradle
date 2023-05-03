@@ -1,0 +1,69 @@
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+
+	dependencies {
+		classpath 'com.google.cloud.tools:appengine-gradle-plugin:2.4.4'
+	}
+}
+
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '2.7.10-SNAPSHOT'
+	id 'io.spring.dependency-management' version '1.0.15.RELEASE'
+}
+
+apply plugin: 'com.google.cloud.tools.appengine'
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+	mavenCentral()
+	maven { url 'https://repo.spring.io/milestone' }
+	maven { url 'https://repo.spring.io/snapshot' }
+}
+
+ext {
+	set('springCloudGcpVersion', "3.4.6")
+	set('springCloudVersion', "2021.0.6")
+}
+
+jar.enabled = false
+
+bootJar{
+	archiveClassifier = 'plain'
+}
+
+dependencies {
+	implementation ('org.springframework.boot:spring-boot-starter-web'){
+		exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+	}
+	implementation 'com.google.cloud:spring-cloud-gcp-starter'
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	implementation 'org.springframework.boot:spring-boot-starter-jetty'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+appengine {
+	
+	deploy {   // deploy configuration
+		projectId = 'aw-test-auth1'
+		version = '3'
+		stopPreviousVersion = true  // default - stop the current version
+		promote = true              // default - & make this the current version
+	}
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "com.google.cloud:spring-cloud-gcp-dependencies:${springCloudGcpVersion}"
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
